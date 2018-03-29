@@ -3,7 +3,9 @@ const path = require('path');
 
 const app = express();
 const server = require('http').createServer(app);
-const io = require('socket.io')(server);
+const io = require('socket.io')(server, { wsEngine: 'ws' });
+
+app.set('port', process.env.PORT || 3000);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'public'));
@@ -21,10 +23,12 @@ io.on('connection', socket => {
 
     socket.emit('previousMessages', messages);
 
-    socket.on('sendMessage', data => {
+    socket.on('sendMessage', (data) => {
         messages.push(data);
         socket.broadcast.emit('receivedMessage', data);
     });
 });
 
-server.listen(3000);
+server.listen(app.get('port'), () => {
+    console.log('server started');
+});
